@@ -1,70 +1,139 @@
 @extends('layouts.login_master')
 
 @section('content')
-    <div class="page-content login-cover">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        <!-- Main content -->
-        <div class="content-wrapper">
+<style>
+    /* પેલા ફોટા જેવો જ લૂક લાવવા માટે કસ્ટમ CSS */
+    .login-header {
+        margin-bottom: 45px;
+    }
+    
+    .login-header h2 {
+        font-weight: 500;
+        color: #1a1a1a;
+        display: inline-block;
+        border-bottom: 3px solid #1a2d3b; /* નીચેની ડાર્ક લાઈન */
+        padding-bottom: 5px;
+        font-size: 2rem;
+        margin: 0;
+        letter-spacing: 0.5px;
+    }
 
-            <!-- Content area -->
-            <div class="content d-flex justify-content-center align-items-center">
+    /* મેઈન ઇનપુટ ગ્રુપ */
+    .input-group-custom {
+        position: relative;
+        margin-bottom: 40px;
+        border-bottom: 2px solid #000; /* ફોટા જેવી જ ડાર્ક બોટમ બોર્ડર */
+        display: flex;
+        align-items: center;
+    }
 
-                <!-- Login card -->
-                <form class="login-form " method="post" action="{{ route('login') }}">
-                    @csrf
-                    <div class="card mb-0">
-                        <div class="card-body">
-                            <div class="text-center mb-3">
-                                <i class="icon-people icon-2x text-warning-400 border-warning-400 border-3 rounded-round p-3 mb-3 mt-1"></i>
-                                <h5 class="mb-0">Login to your account</h5>
-                                <span class="d-block text-muted">Your credentials</span>
-                            </div>
+    /* ડાબી બાજુના આઈકોન્સ (Mail & Lock) */
+    .input-group-custom .left-icon {
+        position: absolute;
+        left: 0;
+        color: #1a2d3b;
+        font-size: 1.1rem;
+    }
 
-                                @if ($errors->any())
-                                <div class="alert alert-danger alert-styled-left alert-dismissible">
-                                    <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
-                                    <span class="font-weight-semibold">Oops!</span> {{ implode('<br>', $errors->all()) }}
-                                </div>
-                                @endif
+    /* ઇનપુટ ફિલ્ડ */
+    .input-group-custom input {
+        width: 100%;
+        border: none;
+        padding: 10px 40px 10px 35px; /* ડાબે-જમણે આઈકોન માટે જગ્યા */
+        outline: none;
+        font-size: 1.1rem;
+        background: transparent;
+        color: #333;
+        font-family: inherit;
+    }
 
+    /* જમણી બાજુનું આંખવાળું આઈકોન */
+    .input-group-custom .toggle-password {
+        position: absolute;
+        right: 0; /* આનાથી આંખ એકદમ જમણી બાજુ જશે */
+        cursor: pointer;
+        color: #333;
+        font-size: 1.1rem;
+        padding: 5px;
+    }
 
-                            <div class="form-group ">
-                                <input type="text" class="form-control" name="identity" value="{{ old('identity') }}" placeholder="Login ID or Email">
-                            </div>
+    /* Forgot Password લિંક */
+    .forgot-pass {
+        display: block;
+        color: #1a1a1a;
+        font-size: 1rem;
+        text-decoration: none;
+        margin-top: -15px;
+        margin-bottom: 45px;
+        font-weight: 500;
+    }
 
-                            <div class="form-group ">
-                                <input required name="password" type="password" class="form-control" placeholder="{{ __('Password') }}">
+    /* Submit બટન */
+    .submit-btn {
+        background-color: #1a2d3b; /* ફોટા મુજબનો ડાર્ક કલર */
+        color: #fff;
+        border: none;
+        width: 100%;
+        padding: 15px;
+        font-size: 1.2rem;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.3s ease;
+    }
 
-                            </div>
+    .submit-btn:hover {
+        background-color: #121f29;
+    }
 
-                            <div class="form-group d-flex align-items-center">
-                                <div class="form-check mb-0">
-                                    <label class="form-check-label">
-                                        <input type="checkbox" name="remember" class="form-input-styled" {{ old('remember') ? 'checked' : '' }} data-fouc>
-                                        Remember
-                                    </label>
-                                </div>
+    /* Placeholder કલર */
+    input::placeholder {
+        color: #999;
+        font-size: 1rem;
+    }
+</style>
 
-                                <a href="{{ route('password.request') }}" class="ml-auto">Forgot password?</a>
-                            </div>
+<div class="login-header">
+    <h2>Login</h2>
+</div>
 
-                            <div class="form-group">
-                                <button type="submit" class="btn btn-primary btn-block">Sign in <i class="icon-circle-right2 ml-2"></i></button>
-                            </div>
+<form method="POST" action="{{ route('login') }}">
+    @csrf
 
-                           {{-- <div class="form-group">
-                                <a href="#" class="btn btn-light btn-block"><i class="icon-home"></i> Back to Home</a>
-                            </div>--}}
-
-
-                        </div>
-                    </div>
-                </form>
-
-            </div>
-
-
-        </div>
-
+    {{-- Email Input --}}
+    <div class="input-group-custom">
+        <i class="fa-solid fa-envelope left-icon"></i>
+        <input type="email" name="identity" placeholder="Enter your email" required value="{{ old('identity') }}">
     </div>
-    @endsection
+
+    {{-- Password Input --}}
+    <div class="input-group-custom">
+        <i class="fa-solid fa-lock left-icon"></i>
+        <input type="password" name="password" id="password" placeholder="Enter your password" required>
+        <i class="fa-solid fa-eye toggle-password" id="eyeIcon" onclick="togglePass()"></i>
+    </div>
+
+    <a href="{{ route('password.request') }}" class="forgot-pass">Forgot password?</a>
+
+    <button type="submit" class="submit-btn">Submit</button>
+</form>
+
+<script>
+    // પાસવર્ડ બતાવવા/છુપાવવા માટેનું ફંક્શન
+    function togglePass() {
+        var x = document.getElementById("password");
+        var icon = document.getElementById("eyeIcon");
+        if (x.type === "password") {
+            x.type = "text";
+            icon.classList.remove("fa-eye");
+            icon.classList.add("fa-eye-slash");
+        } else {
+            x.type = "password";
+            icon.classList.remove("fa-eye-slash");
+            icon.classList.add("fa-eye");
+        }
+    }
+</script>
+@endsection

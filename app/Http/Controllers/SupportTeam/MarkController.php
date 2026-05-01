@@ -86,11 +86,12 @@ class MarkController extends Controller
         $d['year'] = $year;
         $d['student_id'] = $student_id;
         $d['skills'] = $this->exam->getSkillByClassType() ?: NULL;
-        //$d['ct'] = $d['class_type']->code;
-        //$d['mark_type'] = Qs::getMarkType($d['ct']);
+        $d['ct'] = $d['class_type']->code;
+        $d['mark_type'] = Qs::getMarkType($d['ct']);
 
         return view('pages.support_team.marks.show.index', $d);
     }
+    
 
     public function print_view($student_id, $exam_id, $year)
     {

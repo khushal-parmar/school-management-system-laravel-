@@ -163,3 +163,26 @@ Route::group(['namespace' => 'SuperAdmin','middleware' => 'super_admin', 'prefix
 Route::group(['namespace' => 'MyParent','middleware' => 'my_parent',], function(){
     Route::get('/my_children', 'MyController@children')->name('my_children');
 });
+
+
+use App\Http\Controllers\AttendanceController;
+
+Route::group(['middleware' => 'auth'], function () {
+
+    // આ લિંક મેનૂબારમાં આપવાની છે
+    Route::get('/attendance-main', [AttendanceController::class, 'index'])->name('attendance.index');
+
+    // નીચેના રૂટ્સ કંટ્રોલર દ્વારા ઇન્ટરનલી વપરાશે
+    Route::group(['prefix' => 'attendance'], function () {
+        Route::get('/admin', [AttendanceController::class, 'admin_manage'])->name('attendance.admin.manage');
+        Route::get('/teacher', [AttendanceController::class, 'teacher_manage'])->name('attendance.teacher.manage');
+        Route::get('/student', [AttendanceController::class, 'student_view'])->name('attendance.student.view');
+    });
+});
+Route::post('/attendance/select', [AttendanceController::class, 'select_class'])->name('attendance.select');
+Route::post('/attendance/store', [AttendanceController::class, 'store'])->name('attendance.store');
+ 
+// જ્યારે કોઈ ખાલી યુઆરએલ (/) ખોલે ત્યારે index પેજ દેખાય
+Route::get('/', function () {
+    return view('index');
+})->name('welcome'); // આપણે આનું નામ 'welcome' રાખીએ છીએ
