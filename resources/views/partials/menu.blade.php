@@ -219,7 +219,11 @@
                 <li class="nav-item">
                     <a href="{{ route('my_account') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['my_account']) ? 'active' : '' }}"><i class="icon-user"></i> <span>My Account</span></a>
                 </li>
-
+<li class="nav-item">
+    <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="nav-link text-danger">
+        <i class="icon-switch2"></i> <span>Logout</span>
+    </a>
+</li>
                 </ul>
             </div>
         </div>

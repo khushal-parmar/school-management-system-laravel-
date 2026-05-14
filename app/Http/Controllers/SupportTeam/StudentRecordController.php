@@ -49,41 +49,65 @@ class StudentRecordController extends Controller
         return view('pages.support_team.students.add', $data);
     }
 
-    public function store(StudentRecordCreate $req)
-    {
-       $data =  $req->only(Qs::getUserRecord());
-       $sr =  $req->only(Qs::getStudentData());
+   public function store(StudentRecordCreate $req)
+{
+    $data =  $req->only(Qs::getUserRecord());
+    $sr =  $req->only(Qs::getStudentData());
 
-        $ct = $this->my_class->findTypeByClass($req->my_class_id)->code;
-       /* $ct = ($ct == 'J') ? 'JSS' : $ct;
-        $ct = ($ct == 'S') ? 'SS' : $ct;*/
+    // --- નવું પેરેન્ટ લોજિક (Duplicate Entry રોકવા માટે) ---
+    $parent_id = null;
 
-        $data['user_type'] = 'student';
-        $data['name'] = ucwords($req->name);
-        $data['code'] = strtoupper(Str::random(10));
-        $data['password'] = Hash::make('student');
-        $data['photo'] = Qs::getDefaultUserImage();
-        $adm_no = $req->adm_no;
-        $data['username'] = strtoupper(Qs::getAppCode().'/'.$ct.'/'.$sr['year_admitted'].'/'.($adm_no ?: mt_rand(1000, 99999)));
+    // જો નવી પેરેન્ટ વિગતો ભરી હોય
+    if (!$req->my_parent_id && $req->parent_email) {
+        
+        // પેલા ચેક કરો કે આ ઈમેઈલ વાળો યુઝર પહેલેથી છે?
+        // અહીં \App\User:: સીધું વાપર્યું છે જેથી ઈમ્પોર્ટની માથાકૂટ ના રહે
+        $check_parent = \App\User::where('email', $req->parent_email)->first();
+        
+        if (!$check_parent) {
+            $p_data['name'] = ucwords($req->parent_name);
+            $p_data['email'] = $req->parent_email;
+            $p_data['phone'] = $req->parent_phone;
+            $p_data['user_type'] = 'parent';
+            $p_data['password'] = Hash::make('parent'); 
+            $p_data['username'] = $req->parent_email; // ઈમેઈલને જ યુઝરનેમ બનાવ્યું
+            $p_data['photo'] = Qs::getDefaultUserImage();
+            $p_data['code'] = strtoupper(Str::random(10));
 
-        if($req->hasFile('photo')) {
-            $photo = $req->file('photo');
-            $f = Qs::getFileMetaData($photo);
-            $f['name'] = 'photo.' . $f['ext'];
-            $f['path'] = $photo->storeAs(Qs::getUploadPath('student').$data['code'], $f['name']);
-            $data['photo'] = asset('storage/' . $f['path']);
+            $new_parent = \App\User::create($p_data);
+            $parent_id = $new_parent->id;
+        } else {
+            // જો ઈમેઈલ મળી જાય, તો તે જ પેરેન્ટની ID વાપરો, નવી એન્ટ્રી ના કરો
+            $parent_id = $check_parent->id;
         }
-
-        $user = $this->user->create($data); // Create User
-
-        $sr['adm_no'] = $data['username'];
-        $sr['user_id'] = $user->id;
-        $sr['session'] = Qs::getSetting('current_session');
-
-        $this->student->createRecord($sr); // Create Student
-        return Qs::jsonStoreOk();
+    } else {
+        $parent_id = $req->my_parent_id ? Qs::decodeHash($req->my_parent_id) : null;
     }
+    // --- પેરેન્ટ લોજિક પૂરું ---
 
+    $ct = $this->my_class->findTypeByClass($req->my_class_id)->code;
+
+    $data['user_type'] = 'student';
+    $data['name'] = ucwords($req->name);
+    $data['code'] = strtoupper(Str::random(10));
+    $data['password'] = Hash::make('student');
+    $data['photo'] = Qs::getDefaultUserImage();
+    
+    // સ્ટુડન્ટનું યુઝરનેમ જનરેટ કરો
+    $adm_no = $req->adm_no;
+    $data['username'] = strtoupper(Qs::getAppCode().'/'.$ct.'/'.$sr['year_admitted'].'/'.($adm_no ?: mt_rand(1000, 99999)));
+
+    // જો સ્ટુડન્ટના ઈમેઈલ જેવું કઈ નાખ્યું હોય તો તે ડુપ્લીકેટ ના થાય એ જોજો
+    $user = $this->user->create($data); 
+
+    $sr['adm_no'] = $data['username'];
+    $sr['user_id'] = $user->id;
+    $sr['my_parent_id'] = $parent_id; // નવી ID અહીં સેટ થશે
+    $sr['session'] = Qs::getSetting('current_session');
+
+    $this->student->createRecord($sr); 
+    return Qs::jsonStoreOk();
+}
     public function listByClass($class_id)
     {
         $data['my_class'] = $mc = $this->my_class->getMC(['id' => $class_id])->first();

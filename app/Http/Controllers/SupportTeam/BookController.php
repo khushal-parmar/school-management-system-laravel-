@@ -19,17 +19,15 @@ class BookController extends Controller
     }
 
     // ૨. નવું પુસ્તક ઉમેરવા માટેનું ફોર્મ
-   public function create()
+ // BookController.php માં આ મેથડ અપડેટ કરો
+public function create()
 {
-    // પેલા બધી જ બુક્સ લાવો ચેક કરવા માટે
-    $books = DB::table('books')->get(); 
-    
-    // યુઝર ટાઈપ ચેક કરો (તમારા DB માં 'student' અથવા 'Student' હોઈ શકે)
-    $students = DB::table('users')->where('user_type', 'student')->get();
+    // નવી બુક એડ કરવા માટે ક્લાસની જરૂર પડશે
+    $my_classes = DB::table('my_classes')->get(); 
 
-    return view('pages.librarian.book_requests.create', compact('books', 'students'));
+    // અહીં સાચો પાથ આપો (pages.librarian.books.create)
+    return view('pages.librarian.books.create', compact('my_classes'));
 }
-
     // ૩. ડેટાબેઝમાં બુક સેવ કરવા માટે
     public function store(Request $req)
     {
@@ -65,5 +63,50 @@ public function my_books()
         ->get();
 
     return view('pages.student.books.my_books', compact('requests'));
+}
+public function edit($id)
+{
+    // બુકનો ડેટા લાવો
+    $book = DB::table('books')->where('id', $id)->first();
+    
+    if (!$book) {
+        return back()->with('flash_danger', 'Book not found!');
+    }
+
+    // ક્લાસનું લિસ્ટ લાવો (ડ્રોપડાઉન માટે)
+    $my_classes = DB::table('my_classes')->get();
+
+    return view('pages.librarian.books.edit', compact('book', 'my_classes'));
+}
+public function update(Request $req, $id)
+{
+    $req->validate([
+        'name' => 'required',
+        'total_copies' => 'required|integer',
+    ]);
+
+    $data = $req->except(['_token', '_method']);
+    $data['updated_at'] = now();
+
+    DB::table('books')->where('id', $id)->update($data);
+
+    return redirect()->route('books.index')->with('flash_success', 'Book Updated Successfully');
+}
+public function destroy($id)
+{
+    // ૧. પહેલા ચેક કરો કે આ બુક અત્યારે કોઈ સ્ટુડન્ટ પાસે ઈશ્યૂ થયેલી તો નથી ને?
+    $is_issued = DB::table('book_requests')
+                    ->where('book_id', $id)
+                    ->where('status', 'issued')
+                    ->exists();
+
+    if ($is_issued) {
+        return back()->with('flash_danger', 'Cannot delete! This book is currently issued to a student.');
+    }
+
+    // ૨. જો ઈશ્યૂ ન હોય તો જ ડિલીટ કરો
+    DB::table('books')->where('id', $id)->delete();
+
+    return redirect()->route('books.index')->with('flash_success', 'Book Deleted Successfully');
 }
 }

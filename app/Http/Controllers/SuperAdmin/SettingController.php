@@ -16,7 +16,7 @@ class SettingController extends Controller
     {
         $this->setting = $setting;
         $this->my_class = $my_class;
-    }
+    } 
 
     public function index()
     {

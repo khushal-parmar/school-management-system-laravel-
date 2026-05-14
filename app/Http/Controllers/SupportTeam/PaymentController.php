@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SupportTeam;
 
 use App\Helpers\Qs;
+use Illuminate\Support\Facades\Auth;
 use App\Helpers\Pay;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Payment\PaymentCreate;
@@ -20,23 +21,28 @@ class PaymentController extends Controller
 {
     protected $my_class, $pay, $student, $year;
 
-    public function __construct(MyClassRepo $my_class, PaymentRepo $pay, StudentRepo $student)
-    {
-        $this->my_class = $my_class;
-        $this->pay = $pay;
-        $this->year = Qs::getCurrentSession();
-        $this->student = $student;
+   public function __construct(MyClassRepo $my_class, PaymentRepo $pay, StudentRepo $student)
+{
+    $this->my_class = $my_class;
+    $this->pay = $pay;
+    $this->year = Qs::getCurrentSession();
+    $this->student = $student;
 
-        $this->middleware('teamAccount');
+    // અહીં ફેરફાર કરો: 'index' અને 'parent_fees' (આપણે જે બનાવી તે) ને ખુલ્લી કરો
+    $this->middleware('teamAccount', ['except' => ['index', 'parent_fees', 'show', 'invoice', 'receipts']]);
+}
+  public function index()
+{
+    // જો પેરેન્ટ હોય તો તેને સીધા 'My Children' પેજ પર મોકલો
+    if (Auth::user()->user_type == 'parent') {
+        return redirect()->route('my_children');
     }
 
-    public function index()
-    {
-        $d['selected'] = false;
-        $d['years'] = $this->pay->getPaymentYears();
+    $d['selected'] = false;
+    $d['years'] = $this->pay->getPaymentYears();
 
-        return view('pages.support_team.payments.index', $d);
-    }
+    return view('pages.support_team.payments.index', $d);
+}
 
     public function show($year)
     {
@@ -239,4 +245,19 @@ class PaymentController extends Controller
 
         return back()->with('flash_success', __('msg.update_ok'));
     }
+    // આ મેથડ પેરેન્ટને તેના બાળકની ફીઝ બતાવશે
+public function parent_fees($st_id)
+{
+    $st_id = Qs::decodeHash($st_id);
+    if(!$st_id){ return Qs::goWithDanger(); }
+
+    // અહીં ફેરફાર કર્યો: 'user_id' ને બદલે 'student_id' વાપરો
+    $d['fees'] = $this->pay->getRecord(['student_id' => $st_id])->get();
+    
+    // સ્ટુડન્ટનો રેકોર્ડ મેળવવા માટે
+    $d['student'] = $this->student->getRecord(['user_id' => $st_id])->first();
+    $d['current_session'] = Qs::getCurrentSession();
+
+    return view('pages.parent.my_fees', $d); 
+}
 }

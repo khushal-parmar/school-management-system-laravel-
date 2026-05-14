@@ -66,9 +66,6 @@ class MarkController extends Controller
         if(Mk::examIsLocked() && !Qs::userIsTeamSA()){
             Session::put('marks_url', route('marks.show', [Qs::hash($student_id), $year]));
 
-            if(!$this->checkPinVerified($student_id)){
-                return redirect()->route('pins.enter', Qs::hash($student_id));
-            }
         }
 
         if(!$this->verifyStudentExamYear($student_id, $year)){

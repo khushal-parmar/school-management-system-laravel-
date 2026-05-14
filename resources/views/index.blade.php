@@ -84,7 +84,7 @@
 {{-- Slider Fix (Carousel) --}}
 <div class="container mt-5 mb-5 carousel-box">
     {{-- data-bs-ride="carousel" અને data-bs-interval="5000" ઉમેર્યું છે --}}
-    <div id="carouselExample" class="carousel slide shadow" data-bs-ride="carousel" data-bs-interval="5000" style="border-radius: 15px; overflow: hidden;">
+    <div id="carouselExample" class="carousel slide shadow" data-bs-ride="carousel" data-bs-interval="2000" style="border-radius: 15px; overflow: hidden;">
         
         {{-- Indicators (ઓપ્શનલ: નીચે ટપકાં દેખાડવા માટે) --}}
         <div class="carousel-indicators">

@@ -34,37 +34,51 @@ class TimeTableController extends Controller
         return view('pages.support_team.timetables.index', $d);
     }
 
-    public function manage($ttr_id)
-    {
-        $d['ttr_id'] = $ttr_id;
-        $d['ttr'] = $ttr = $this->tt->findRecord($ttr_id);
-        $d['time_slots'] = $this->tt->getTimeSlotByTTR($ttr_id);
-        $d['ts_existing'] = $this->tt->getExistingTS($ttr_id);
-        $d['subjects'] = $this->my_class->getSubject(['my_class_id' => $ttr->my_class_id])->get();
-        $d['my_class'] = $this->my_class->find($ttr->my_class_id);
+   public function manage($ttr_id)
+{
+    $d['ttr_id'] = $ttr_id;
+    $d['ttr'] = $ttr = $this->tt->findRecord($ttr_id);
+    $d['time_slots'] = $this->tt->getTimeSlotByTTR($ttr_id);
 
-        if($ttr->exam_id){
-            $d['exam_id'] = $ttr->exam_id;
-            $d['exam'] = $this->exam->find($ttr->exam_id);
-        }
+    // જૂની લાઈન કાઢી નાખો: $d['ts_existing'] = $this->tt->getExistingTS($ttr_id);
+    
+    // નવી લાઈન આ નાખો: આનાથી બધા ટાઈમ ટેબલ રેકોર્ડ્સ આવશે (અત્યારના ID સિવાયના)
+    $d['ts_existing'] = $this->tt->getAllRecords()->where('id', '<>', $ttr_id);
 
-        $d['tts'] = $this->tt->getTimeTable(['ttr_id' => $ttr_id]);
+    $d['subjects'] = $this->my_class->getSubject(['my_class_id' => $ttr->my_class_id])->get();
+    $d['my_class'] = $this->my_class->find($ttr->my_class_id);
 
-        return view('pages.support_team.timetables.manage', $d);
+    if($ttr->exam_id){
+        $d['exam_id'] = $ttr->exam_id;
+        $d['exam'] = $this->exam->find($ttr->exam_id);
     }
 
-    public function store(TTRequest $req)
-    {
-        $data = $req->all();
-        $tms = $this->tt->findTimeSlot($req->ts_id);
-        $d_date = $req->exam_date ?? $req->day;
-        $data['timestamp_from'] = strtotime($d_date.' '.$tms->time_from);
-        $data['timestamp_to'] = strtotime($d_date.' '.$tms->time_to);
+    $d['tts'] = $this->tt->getTimeTable(['ttr_id' => $ttr_id]);
 
-        $this->tt->create($data);
+    return view('pages.support_team.timetables.manage', $d);
+}
 
-        return Qs::jsonStoreOk();
+   public function store(TTRequest $req)
+{
+    $data = $req->all();
+    $tms = $this->tt->findTimeSlot($req->ts_id);
+
+    // ચેક કરો કે ટાઈમ સ્લોટ અસ્તિત્વમાં છે કે નહીં
+    if (!$tms) {
+        return response()->json(['msg' => 'Time Slot not found', 'ok' => false]);
     }
+
+    // જો એક્ઝામ ડેટ ન હોય તો ડે (Day) લો, અને જો બંને ન હોય તો આજની તારીખ લો
+    $d_date = $req->exam_date ?? $req->day ?? date('Y-m-d');
+
+    // ટાઈમસ્ટમ્પ બનાવતી વખતે ભૂલ ન થાય તે માટેનો ફિક્સ
+    $data['timestamp_from'] = strtotime($d_date.' '.$tms->time_from);
+    $data['timestamp_to'] = strtotime($d_date.' '.$tms->time_to);
+
+    $this->tt->create($data);
+
+    return Qs::jsonStoreOk();
+}
 
     public function update(TTRequest $req, $tt_id)
     {

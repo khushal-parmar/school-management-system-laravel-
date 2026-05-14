@@ -152,7 +152,7 @@
 
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label for="my_parent_id">Parent: </label>
+                                <label for="my_parent_id">Select Existing Parent: </label>
                                 <select data-placeholder="Choose..."  name="my_parent_id" id="my_parent_id" class="select-search form-control">
                                     <option  value=""></option>
                                     @foreach($parents as $p)
@@ -207,6 +207,38 @@
                                 <input type="text" name="adm_no" placeholder="Admission Number" class="form-control" value="{{ old('adm_no') }}">
                             </div>
                         </div>
+                    </div>
+                </fieldset>
+
+                {{-- નવી પેરેન્ટ ડિટેલ્સ માટેનું સેક્શન --}}
+                <h6>Or Create New Parent</h6>
+                <fieldset>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Parent's Full Name:</label>
+                                <input value="{{ old('parent_name') }}" type="text" name="parent_name" placeholder="Full Name" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Parent's Email: <span class="text-muted">(For Login)</span></label>
+                                <input value="{{ old('parent_email') }}" type="email" name="parent_email" placeholder="Email Address" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Parent's Phone:</label>
+                                <input value="{{ old('parent_phone') }}" type="text" name="parent_phone" class="form-control" placeholder="Phone Number" >
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                         <div class="col-md-12">
+                            <p class="text-info">Note: If you fill these parent details, a new login will be created automatically with password: <strong>parent</strong></p>
+                         </div>
                     </div>
                 </fieldset>
 

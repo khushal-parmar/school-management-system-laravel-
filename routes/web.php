@@ -3,7 +3,7 @@
 use App\Http\Controllers\MyAccountController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\SupportTeam\PaymentController;
 Auth::routes();
 
 Route::get('/privacy-policy', 'HomeController@privacy_policy')->name('privacy_policy');
@@ -27,17 +27,30 @@ Route::group(['middleware' => 'auth'], function () {
     /*************** Support Team Group *****************/
     Route::group(['namespace' => 'SupportTeam'], function(){
 
-        /*************** Books Management (Librarian) *****************/
-        // આ હવે App\Http\Controllers\SupportTeam\BookController ને શોધશે
-        Route::resource('books', 'BookController');
-Route::resource('book_requests', 'BookRequestController');
-// આ રૂટને આ રીતે જ લખો
-Route::get('return-book-direct', 'BookRequestController@return_book')->name('book_requests.return');
-    /*************** Student Library Routes *****************/
-    // અહીં 'SupportTeam\' લખવાની જરૂર નથી કારણ કે આપણે ગ્રુપની અંદર છીએ
-    Route::get('library/all-books', 'BookController@student_index')->name('student.books.index');
-    Route::get('library/my-books', 'BookController@my_books')->name('student.books.my_books');
+       /*************** Books Management (Librarian) *****************/
 
+// ૧. બુક ઈસ્યુ કરવા માટેના સ્પેશિયલ રૂટ્સ (આને Resource ની ઉપર રાખવા)
+Route::get('books/issue', 'BookController@issue_view')->name('books.issue_view');
+Route::post('books/issue', 'BookController@issue_store')->name('books.issue_store');
+
+// ૨. બુક રિટર્ન કરવા માટે
+Route::get('books/return-direct', 'BookController@return_book')->name('books.return');
+
+// ૩. બાકીના સ્ટાન્ડર્ડ રૂટ્સ (Index, Create, Store, Edit, Delete)
+Route::resource('books', 'BookController');
+
+// ૪. બુક રિક્વેસ્ટ (જો તમે અલગ કંટ્રોલર વાપરતા હોવ)
+Route::resource('book_requests', 'BookRequestController');
+// આ રૂટ ખાસ ચેક કરો, તેનું નામ 'book_requests.return' હોવું જોઈએ
+Route::get('book-return-direct', 'BookRequestController@return_book')->name('book_requests.return');
+
+// તેની નીચે તમારો રીસોર્સ રૂટ
+Route::resource('book_requests', 'BookRequestController');
+/*************** Student Library Routes *****************/
+Route::group(['prefix' => 'library'], function() {
+    Route::get('all-books', 'BookController@student_index')->name('student.books.index');
+    Route::get('my-books', 'BookController@my_books')->name('student.books.my_books');
+});
         /*************** Students *****************/
         Route::group(['prefix' => 'students'], function(){
             Route::get('reset_pass/{st_id}', 'StudentRecordController@reset_pass')->name('st.reset_pass');
@@ -102,7 +115,9 @@ Route::get('return-book-direct', 'BookRequestController@return_book')->name('boo
             Route::post('select_class', 'PaymentController@select_class')->name('payments.select_class');
             Route::delete('reset_record/{id}', 'PaymentController@reset_record')->name('payments.reset_record');
             Route::post('pay_now/{id}', 'PaymentController@pay_now')->name('payments.pay_now');
+            Route::get('parent/fees/{st_id}', [PaymentController::class, 'parent_fees'])->name('parent.fees');
         });
+
 
         /*************** Marks *****************/
         Route::group(['prefix' => 'marks'], function(){
@@ -186,3 +201,6 @@ Route::post('/attendance/store', [AttendanceController::class, 'store'])->name('
 Route::get('/', function () {
     return view('index');
 })->name('welcome'); // આપણે આનું નામ 'welcome' રાખીએ છીએ
+Route::group(['middleware' => 'auth'], function () {
+    Route::resource('notices', 'SupportTeam\NoticeController');
+});

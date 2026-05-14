@@ -11,21 +11,24 @@ use App\Models\StudentRecord;
 use App\Models\Section; // આ મોડલ ચેક કરી લેજો
 class AttendanceController extends Controller
 {
-    public function index()
-    {
-        $user = Auth::user();
-        $role = $user->user_type; 
+   public function index()
+{
+    $user = Auth::user();
+    $role = $user->user_type; 
 
-        if ($role == 'super_admin' || $role == 'admin') {
-            return redirect()->route('attendance.admin.manage');
-        } elseif ($role == 'teacher') {
-            return redirect()->route('attendance.teacher.manage');
-        } elseif ($role == 'student') {
-            return redirect()->route('attendance.student.view');
-        }
-
-        return redirect()->route('dashboard')->with('flash_danger', 'Access Denied!');
+    if ($role == 'super_admin' || $role == 'admin') {
+        return redirect()->route('attendance.admin.manage');
+    } elseif ($role == 'teacher') {
+        return redirect()->route('attendance.teacher.manage');
+    } elseif ($role == 'student') {
+        return redirect()->route('attendance.student.view');
+    } elseif ($role == 'parent') {
+        // પેરેન્ટ માટે નવો રૂટ અથવા મેથડ
+        return redirect()->route('my_children'); 
     }
+
+    return redirect()->route('dashboard')->with('flash_danger', 'Access Denied!');
+}
 
     /**
      * એડમિન માટે ક્લાસ સિલેક્શન પેજ
