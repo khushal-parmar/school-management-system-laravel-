@@ -33,7 +33,7 @@
                     <span class="d-md-none ml-2">Home</span>
                 </a>
             </li>
-
+{{-- <button id="top-chat-trigger" class="btn btn-info">AI Chatbot</button> --}}
             <li class="nav-item dropdown">
                 <a href="{{ route('login') }}" class="navbar-nav-link">
                     <i class="icon-user-tie"></i>
@@ -50,4 +50,5 @@
         </ul>
     </div>
 </div>
-<!-- /main navbar -->
+<!-- /main navbar   -->  
+

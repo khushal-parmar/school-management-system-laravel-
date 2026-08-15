@@ -204,3 +204,8 @@ Route::get('/', function () {
 Route::group(['middleware' => 'auth'], function () {
     Route::resource('notices', 'SupportTeam\NoticeController');
 });
+use App\Http\Controllers\Auth\ResetPasswordController;
+
+// Direct Password Reset Routes
+Route::get('direct-reset-password', [ResetPasswordController::class, 'showDirectResetForm'])->name('password.direct.form');
+Route::post('direct-reset-password', [ResetPasswordController::class, 'processDirectReset'])->name('password.direct.update');

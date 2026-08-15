@@ -23,7 +23,7 @@
                 <a href="form_select2.html" class="breadcrumb-item">Forms</a>
                 <span class="breadcrumb-item active">Select2 selects</span>
             </div>
-
+ 
             <a href="#" class="header-elements-toggle text-default d-md-none"><i class="icon-more"></i></a>
         </div>
 
@@ -50,5 +50,5 @@
                 </div>
             </div>
         </div>
-    </div>--}}
+    </div> --}}
 </div>

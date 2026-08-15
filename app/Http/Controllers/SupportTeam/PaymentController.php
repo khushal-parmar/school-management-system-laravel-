@@ -221,7 +221,7 @@ class PaymentController extends Controller
 
         return is_null($pay) ? Qs::goWithDanger('payments.index') : view('pages.support_team.payments.edit', $d);
     }
-
+// 
     public function update(PaymentUpdate $req, $id)
     {
         $data = $req->all();
@@ -245,18 +245,22 @@ class PaymentController extends Controller
 
         return back()->with('flash_success', __('msg.update_ok'));
     }
-    // આ મેથડ પેરેન્ટને તેના બાળકની ફીઝ બતાવશે
+    // 
 public function parent_fees($st_id)
 {
     $st_id = Qs::decodeHash($st_id);
     if(!$st_id){ return Qs::goWithDanger(); }
 
-    // અહીં ફેરફાર કર્યો: 'user_id' ને બદલે 'student_id' વાપરો
-    $d['fees'] = $this->pay->getRecord(['student_id' => $st_id])->get();
-    
-    // સ્ટુડન્ટનો રેકોર્ડ મેળવવા માટે
-    $d['student'] = $this->student->getRecord(['user_id' => $st_id])->first();
-    $d['current_session'] = Qs::getCurrentSession();
+    $student = $this->student->getRecord(['user_id' => $st_id])->first();
+    if(!$student){ return back(); }
+
+    $d['fees'] = \DB::table('payment_records')
+        ->join('payments', 'payment_records.payment_id', '=', 'payments.id')
+        ->where('payment_records.student_id', $st_id)
+        ->select('payment_records.*', 'payments.title as fee_title', 'payments.amount as total_amount')
+        ->get();
+
+    $d['student'] = $student;
 
     return view('pages.parent.my_fees', $d); 
 }
